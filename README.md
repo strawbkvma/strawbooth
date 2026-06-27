@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🍓 strawbooth
+# 🍓 Strawbooth
 
 **a cute lil camera for the girlies — cottagecore digicam vibes, no upload, no tracking, just vibes**
 
@@ -14,7 +14,7 @@
 
 ## ✨ what it does
 
-strawbooth is a single-file web photobooth that turns your camera (or a photo from your gallery) into a little keepsake — either a classic **4-shot photo strip** or a **polaroid**, dressed up with strawberry milk / disposable cam / matcha cream filters and a Y2K-digicam HUD.
+Strawbooth is a single-file web photobooth that turns your camera (or a photo from your gallery) into a little keepsake — either a classic **4-shot photo strip** or a **polaroid**, dressed up with strawberry milk / disposable cam / matcha cream filters and a Y2K-digicam HUD.
 
 - 🍓 **strawberry-shaped shutter button** — leaves, seeds, the whole thing, built in pure CSS
 - 🎞️ **strip mode** (4 shots) or **📸 polaroid mode** (1 shot), your pick
@@ -40,7 +40,7 @@ No build step, no `node_modules`, no dependencies to install.
 
 ### run it locally
 ```bash
-git clone https://github.com/your-username/strawbooth.git
+git clone https://github.com/strawbkvma/strawbooth.git
 cd strawbooth
 ```
 Then just open `strawbooth.html` in your browser — double-click it, or:
@@ -50,10 +50,7 @@ npx serve .
 ```
 
 ### deploy it (GitHub Pages)
-1. push this repo to GitHub
-2. **Settings → Pages → Deploy from a branch** → pick `main` and `/ (root)`
-3. rename `strawbooth.html` to `index.html` (or set it as your Pages entry file) so the link is clean
-4. your strawbooth is live at `https://your-username.github.io/strawbooth/` 🍓
+Or you can click [here](https://strawbkvma.github.io/strawbooth/) to try it! 🍓
 
 > camera access requires **https** or **localhost** in most browsers — both GitHub Pages and `npx serve` cover that.
 
