@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🍓 [Strawbooth](https://strawbkvma.github.io/strawbooth/strawbooth.html/)
+# 🍓 [Strawbooth](https://strawbkvma.github.io/strawbooth/)
 
 **a cute lil camera for the girlies — cottagecore digicam vibes, no upload, no tracking, just vibes**
 
@@ -50,7 +50,7 @@ npx serve .
 ```
 
 ### deploy it (GitHub Pages)
-Or you can click [here](https://strawbkvma.github.io/strawbooth/strawbooth.html/) to try it! 🍓
+Or you can click [here](https://strawbkvma.github.io/strawbooth/) to try it! 🍓
 
 > camera access requires **https** or **localhost** in most browsers — both GitHub Pages and `npx serve` cover that.
 
