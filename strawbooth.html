@@ -1,1 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>strawbooth 🍓</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Chewy&family=Quicksand:wght@400;500;600;700&family=Caveat:wght@500;600;700&family=VT323&display=swap');
 
+  :root{
+    --cream:#FFF6EC;
+    --cream-deep:#FCEEDD;
+    --milk-pink:#FFD7E2;
+    --milk-pink-deep:#FFC2D6;
+    --strawberry:#E3445C;
+    --strawberry-deep:#C62A41;
+    --leaf:#7C9473;
+    --leaf-deep:#5F7A57;
+    --choco:#6B4226;
+    --choco-soft:#9A6B4C;
+    --butter:#FFE8A3;
+    --white:#FFFDF9;
+    --shadow: rgba(107,66,38,0.18);
+    --radius-lg: 32px;
+    --radius-md: 20px;
+    --radius-sm: 12px;
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:'Quicksand', sans-serif;
+    color:var(--choco);
+    background: radial-gradient(circle at 20% 0%, var(--milk-pink) 0%, transparent 55%),
+                radial-gradient(circle at 90% 100%, var(--butter) 0%, transparent 50%),
+                var(--cream);
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    padding:28px 14px 60px;
+    position:relative;
+    overflow-x:hidden;
+  }
+
+  /* ---------- floating background decor ---------- */
+  .bg-decor{ position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+  .floatie{
+    position:absolute;
+    font-size: clamp(18px, 4vw, 30px);
+    opacity:0.35;
+    animation: drift 18s ease-in-out infinite;
+    filter: drop-shadow(0 4px 6px rgba(107,66,38,0.12));
+  }
+  .floatie:nth-child(1){ top:6%;  left:8%;  animation-duration:16s; }
+  .floatie:nth-child(2){ top:14%; left:82%; animation-duration:21s; animation-delay:-4s; }
+  .floatie:nth-child(3){ top:42%; left:4%;  animation-duration:19s; animation-delay:-9s; }
+  .floatie:nth-child(4){ top:68%; left:88%; animation-duration:17s; animation-delay:-2s; }
+  .floatie:nth-child(5){ top:85%; left:14%; animation-duration:23s; animation-delay:-12s; }
+  .floatie:nth-child(6){ top:30%; left:92%; animation-duration:20s; animation-delay:-6s; }
+
+  @keyframes drift{
+    0%,100%{ transform: translateY(0) rotate(-6deg); }
+    50%{ transform: translateY(-26px) rotate(8deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .floatie{ animation:none; }
+    *{ animation-duration:0.001s !important; transition-duration:0.001s !important; }
+  }
+
+  /* ---------- phone card ---------- */
+  .phone-card{
+    position:relative;
+    z-index:1;
+    width:100%;
+    max-width:430px;
+    background:linear-gradient(180deg, var(--white), var(--cream-deep));
+    border-radius: var(--radius-lg);
+    box-shadow: 0 20px 50px var(--shadow), 0 2px 0 rgba(255,255,255,0.6) inset;
+    padding:22px 18px 26px;
+    border: 3px solid var(--white);
+  }
+
+  .app-header{ text-align:center; margin-bottom:14px; }
+  .logo{
+    font-family:'Chewy', cursive;
+    color:var(--strawberry-deep);
+    font-size:30px;
+    margin:0 0 2px;
+    letter-spacing:0.5px;
+    text-shadow: 0 2px 0 rgba(255,255,255,0.8);
+  }
+  .tagline{ margin:0; font-size:13px; color:var(--choco-soft); font-weight:600; }
+
+  /* ---------- screens ---------- */
+  .screen{ display:none; }
+  .screen.active{ display:block; }
+
+  /* ---------- viewfinder ---------- */
+  .viewfinder{
+    position:relative;
+    aspect-ratio: 4/3;
+    width:100%;
+    border-radius: var(--radius-md);
+    overflow:hidden;
+    background: #2b2018;
+    box-shadow: inset 0 0 0 4px var(--white), 0 10px 24px var(--shadow);
+  }
+
+  #video{
+    width:100%; height:100%; object-fit:cover; display:block;
+    transition: filter 0.25s ease;
+  }
+  #video.mirrored{ transform: scaleX(-1); }
+
+  .vf-hud{ position:absolute; inset:0; pointer-events:none; }
+  .hud-top{
+    position:absolute; top:10px; left:10px; right:10px;
+    display:flex; align-items:center; justify-content:space-between;
+    font-family:'VT323', monospace; font-size:16px; color:#fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  }
+  .rec-dot{
+    width:10px; height:10px; border-radius:50%; background:#ff4d4d;
+    box-shadow:0 0 6px #ff4d4d; display:inline-block; margin-right:6px;
+    animation: blink 1.4s steps(1) infinite;
+    vertical-align:middle;
+  }
+  @keyframes blink{ 50%{ opacity:0.15; } }
+  .hud-top .rec-wrap{ display:flex; align-items:center; }
+
+  .vf-corner{ position:absolute; font-size:20px; opacity:0.85; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5)); }
+  .vf-corner.tl{ top:8px; left:8px; }
+  .vf-corner.tr{ top:8px; right:8px; }
+  .vf-corner.bl{ bottom:34px; left:8px; }
+  .vf-corner.br{ bottom:34px; right:8px; }
+
+  .timestamp{
+    position:absolute; bottom:8px; left:10px;
+    font-family:'VT323', monospace; font-size:18px; color:#ffe8a3;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+    letter-spacing:1px;
+  }
+
+  .flash-overlay{
+    position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none;
+  }
+  .flash-overlay.flashing{ animation: flash 0.45s ease-out; }
+  @keyframes flash{ 0%{ opacity:0; } 12%{ opacity:0.9; } 100%{ opacity:0; } }
+
+  .countdown-overlay{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-family:'Chewy', cursive; font-size:64px; color:#fff;
+    text-shadow: 0 3px 8px rgba(0,0,0,0.5);
+  }
+  .countdown-overlay span.pulse{ animation: pop 0.6s ease; }
+  @keyframes pop{ 0%{ transform:scale(0.4); opacity:0; } 60%{ transform:scale(1.15); opacity:1; } 100%{ transform:scale(1); } }
+
+  .camera-fallback{
+    position:absolute; inset:0; display:flex; flex-direction:column; gap:14px;
+    align-items:center; justify-content:center; text-align:center; padding:24px;
+    background: linear-gradient(180deg, var(--milk-pink), var(--milk-pink-deep));
+    color:var(--choco);
+  }
+  .camera-fallback p{ margin:0; font-weight:600; font-size:14px; }
+
+  /* ---------- controls ---------- */
+  .controls{ margin-top:16px; display:flex; flex-direction:column; gap:14px; }
+
+  .mode-toggle{
+    display:flex; background:var(--cream-deep); border-radius: 999px; padding:4px;
+    border:2px solid var(--milk-pink-deep);
+  }
+  .mode-btn{
+    flex:1; border:none; background:transparent; padding:9px 0; font-family:'Quicksand';
+    font-weight:700; font-size:13px; color:var(--choco-soft); border-radius:999px; cursor:pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .mode-btn.active{ background:var(--strawberry); color:#fff; box-shadow:0 3px 8px var(--shadow); }
+
+  .filter-row{
+    display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;
+    scrollbar-width:thin;
+  }
+  .filter-chip{
+    flex:0 0 auto; white-space:nowrap; border:2px solid var(--milk-pink-deep);
+    background:var(--white); color:var(--choco); font-family:'Quicksand'; font-weight:600;
+    font-size:12.5px; padding:8px 12px; border-radius:999px; cursor:pointer;
+    transition: all 0.2s;
+  }
+  .filter-chip.active{
+    background:var(--leaf); border-color:var(--leaf-deep); color:#fff;
+  }
+
+  .action-row{ display:flex; align-items:center; justify-content:center; gap:26px; }
+
+  .icon-btn{
+    width:44px; height:44px; border-radius:50%; border:2px solid var(--milk-pink-deep);
+    background:var(--white); font-size:18px; cursor:pointer; display:flex; align-items:center;
+    justify-content:center;
+  }
+
+  .shutter-btn{
+    width:74px; height:74px; border-radius:50%; border:3px solid var(--white);
+    cursor:pointer; position:relative; flex:0 0 auto;
+    background:
+      radial-gradient(circle at 32% 30%, var(--white) 0 3px, transparent 4px),
+      radial-gradient(circle at 58% 22%, var(--white) 0 3px, transparent 4px),
+      radial-gradient(circle at 25% 52%, var(--white) 0 3px, transparent 4px),
+      radial-gradient(circle at 50% 50%, var(--white) 0 3px, transparent 4px),
+      radial-gradient(circle at 70% 48%, var(--white) 0 3px, transparent 4px),
+      radial-gradient(circle at 38% 75%, var(--white) 0 3px, transparent 4px),
+      radial-gradient(circle at 62% 74%, var(--white) 0 3px, transparent 4px),
+      radial-gradient(circle at 50% 50%, var(--strawberry) 0%, var(--strawberry-deep) 85%);
+    box-shadow: 0 8px 16px var(--shadow);
+  }
+  .shutter-btn::before, .shutter-btn::after{
+    content:""; position:absolute; top:-9px; width:26px; height:16px; background:var(--leaf);
+    border-radius:60% 60% 10% 10%;
+  }
+  .shutter-btn::before{ left:14px; transform:rotate(-25deg); }
+  .shutter-btn::after{ right:14px; transform:rotate(25deg); }
+  .shutter-btn:active{ transform: scale(0.94); }
+  .shutter-btn:disabled{ opacity:0.5; cursor:default; }
+
+  .shot-counter{ font-weight:600; letter-spacing:0.5px; }
+
+  /* ---------- buttons (generic) ---------- */
+  .btn{
+    font-family:'Quicksand'; font-weight:700; font-size:14px; border-radius:999px;
+    padding:12px 20px; cursor:pointer; border:2px solid transparent;
+  }
+  .btn-primary{ background:var(--strawberry); color:#fff; box-shadow:0 6px 14px var(--shadow); }
+  .btn-primary input{ display:none; }
+  .btn-ghost{ background:transparent; color:var(--choco-soft); border-color:var(--milk-pink-deep); }
+
+  button:focus-visible, .btn:focus-visible, label.btn:focus-within{
+    outline:3px dashed var(--strawberry); outline-offset:3px;
+  }
+
+  /* ---------- result screen ---------- */
+  .result-wrap{
+    width:100%; display:flex; justify-content:center; margin-bottom:16px;
+    background: var(--cream-deep); border-radius: var(--radius-md); padding:10px;
+  }
+  #finalCanvas{ max-width:100%; height:auto; border-radius:10px; display:block; }
+  .result-actions{ display:flex; gap:12px; justify-content:center; }
+
+  .footnote{ text-align:center; font-size:12px; color:var(--choco-soft); margin:18px 0 0; }
+  .privacy-note{ text-align:center; font-size:11.5px; color:var(--choco-soft); margin:6px 0 0; opacity:0.85; }
+
+  @media (max-width:380px){
+    .logo{ font-size:26px; }
+    .shutter-btn{ width:64px; height:64px; }
+    .action-row{ gap:18px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="bg-decor" aria-hidden="true">
+    <span class="floatie">🍓</span>
+    <span class="floatie">🍃</span>
+    <span class="floatie">🍓</span>
+    <span class="floatie">🌸</span>
+    <span class="floatie">🍃</span>
+    <span class="floatie">🍓</span>
+  </div>
+
+  <main class="phone-card">
+    <header class="app-header">
+      <h1 class="logo">🍓 strawbooth</h1>
+      <p class="tagline">your lil cottagecore camera ✨</p>
+    </header>
+
+    <!-- CAMERA SCREEN -->
+    <section id="screen-camera" class="screen active">
+      <div class="viewfinder" id="viewfinder">
+        <video id="video" autoplay playsinline muted></video>
+
+        <div class="vf-hud">
+          <div class="hud-top">
+            <span class="rec-wrap"><span class="rec-dot" aria-hidden="true"></span>REC</span>
+            <span class="shot-counter" id="shotCounter">SHOT 1/4</span>
+          </div>
+          <div class="vf-corner tl" aria-hidden="true">🍓</div>
+          <div class="vf-corner tr" aria-hidden="true">🍓</div>
+          <div class="vf-corner bl" aria-hidden="true">🍓</div>
+          <div class="vf-corner br" aria-hidden="true">🍓</div>
+          <div class="timestamp" id="liveTimestamp">2026.06.27 12:00</div>
+        </div>
+
+        <div class="flash-overlay" id="flashOverlay"></div>
+
+        <div class="countdown-overlay" id="countdownOverlay" aria-live="assertive">
+          <span id="countdownText"></span>
+        </div>
+
+        <div class="camera-fallback" id="cameraFallback" hidden>
+          <p id="fallbackText">couldn't find a camera — no worries, let's grab a pic from your gallery instead 🍓</p>
+          <label class="btn btn-primary">
+            choose photo
+            <input type="file" id="fileInput" accept="image/*" capture="environment">
+          </label>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="mode-toggle" role="group" aria-label="choose strip or polaroid">
+          <button class="mode-btn active" data-mode="strip" type="button">🎞️ strip</button>
+          <button class="mode-btn" data-mode="polaroid" type="button">📸 polaroid</button>
+        </div>
+
+        <div class="filter-row" id="filterRow" role="group" aria-label="choose a film filter">
+          <button class="filter-chip active" data-filter="milk" type="button">🍓 strawberry milk</button>
+          <button class="filter-chip" data-filter="disposable" type="button">📷 disposable cam</button>
+          <button class="filter-chip" data-filter="matcha" type="button">🍵 matcha cream</button>
+          <button class="filter-chip" data-filter="none" type="button">✨ no filter</button>
+        </div>
+
+        <div class="action-row">
+          <button class="icon-btn" id="flipCameraBtn" type="button" title="flip camera" aria-label="flip camera">🔄</button>
+          <button class="shutter-btn" id="shutterBtn" type="button" aria-label="take photo"></button>
+          <button class="icon-btn" id="soundToggleBtn" type="button" title="toggle sound" aria-label="toggle shutter sound">🔊</button>
+        </div>
+      </div>
+      <p class="privacy-note">photos stay on your device — nothing gets uploaded 🍓</p>
+    </section>
+
+    <!-- RESULT SCREEN -->
+    <section id="screen-result" class="screen">
+      <div class="result-wrap">
+        <canvas id="finalCanvas"></canvas>
+      </div>
+      <div class="result-actions">
+        <button class="btn btn-ghost" id="retakeBtn" type="button">↺ retake</button>
+        <button class="btn btn-primary" id="downloadBtn" type="button">⬇ save to gallery</button>
+      </div>
+    </section>
+
+    <p class="footnote">made with 🍓 for the girlies</p>
+  </main>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ===================== state ===================== */
+  const state = {
+    mode: 'strip',          // 'strip' | 'polaroid'
+    filter: 'milk',         // 'milk' | 'disposable' | 'matcha' | 'none'
+    facingMode: 'user',
+    shotsNeeded: 4,
+    shots: [],               // {canvas, time}
+    capturing: false,
+    useFallback: false,
+    soundOn: true,
+    caption: '',
+    stream: null,
+  };
+
+  const CAPTIONS = [
+    'feeling berry cute today ~',
+    'main character energy 🍓',
+    'soft girl summer, strawberry edition',
+    'y2k but make it cottagecore',
+    'pick me a strawberry, not a fight',
+    'snack break, vibes immaculate',
+    'a little treat for the timeline'
+  ];
+
+  const FILTERS = {
+    milk:       { css: 'sepia(0.12) saturate(1.3) hue-rotate(-6deg) brightness(1.1) contrast(0.92)',
+                  tint: { color:'#ffd2e0', alpha:0.16 } },
+    disposable: { css: 'contrast(1.18) brightness(1.15) saturate(1.08)',
+                  grain: 14, vignette: 0.32 },
+    matcha:     { css: 'sepia(0.18) saturate(0.82) hue-rotate(40deg) brightness(1.04) contrast(0.95)',
+                  tint: { color:'#cfe0b8', alpha:0.13 } },
+    none:       { css: 'none' },
+  };
+
+  /* ===================== dom refs ===================== */
+  const video = document.getElementById('video');
+  const viewfinder = document.getElementById('viewfinder');
+  const cameraFallback = document.getElementById('cameraFallback');
+  const fallbackText = document.getElementById('fallbackText');
+  const fileInput = document.getElementById('fileInput');
+  const flashOverlay = document.getElementById('flashOverlay');
+  const countdownOverlay = document.getElementById('countdownOverlay');
+  const countdownText = document.getElementById('countdownText');
+  const liveTimestamp = document.getElementById('liveTimestamp');
+  const shotCounter = document.getElementById('shotCounter');
+
+  const shutterBtn = document.getElementById('shutterBtn');
+  const flipCameraBtn = document.getElementById('flipCameraBtn');
+  const soundToggleBtn = document.getElementById('soundToggleBtn');
+
+  const modeBtns = document.querySelectorAll('.mode-btn');
+  const filterChips = document.querySelectorAll('.filter-chip');
+
+  const screenCamera = document.getElementById('screen-camera');
+  const screenResult = document.getElementById('screen-result');
+  const finalCanvasEl = document.getElementById('finalCanvas');
+  const retakeBtn = document.getElementById('retakeBtn');
+  const downloadBtn = document.getElementById('downloadBtn');
+
+  /* ===================== helpers ===================== */
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const clamp255 = v => v < 0 ? 0 : v > 255 ? 255 : v;
+  const pad2 = n => String(n).padStart(2, '0');
+
+  function formatDigicamStamp(date){
+    return `${date.getFullYear()}.${pad2(date.getMonth()+1)}.${pad2(date.getDate())}  ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+  }
+
+  function getCoverCrop(srcW, srcH, targetW, targetH){
+    const srcRatio = srcW / srcH, targetRatio = targetW / targetH;
+    let sw, sh, sx, sy;
+    if(srcRatio > targetRatio){
+      sh = srcH; sw = srcH * targetRatio; sx = (srcW - sw) / 2; sy = 0;
+    } else {
+      sw = srcW; sh = srcW / targetRatio; sx = 0; sy = (srcH - sh) / 2;
+    }
+    return { sx, sy, sw, sh };
+  }
+
+  function roundRectPath(ctx, x, y, w, h, r){
+    if(typeof r === 'number') r = { tl:r, tr:r, br:r, bl:r };
+    ctx.beginPath();
+    ctx.moveTo(x + r.tl, y);
+    ctx.lineTo(x + w - r.tr, y);
+    ctx.arcTo(x + w, y, x + w, y + r.tr, r.tr);
+    ctx.lineTo(x + w, y + h - r.br);
+    ctx.arcTo(x + w, y + h, x + w - r.br, y + h, r.br);
+    ctx.lineTo(x + r.bl, y + h);
+    ctx.arcTo(x, y + h, x, y + h - r.bl, r.bl);
+    ctx.lineTo(x, y + r.tl);
+    ctx.arcTo(x, y, x + r.tl, y, r.tl);
+    ctx.closePath();
+  }
+
+  function drawGingham(ctx, w, h, color, gap){
+    ctx.save();
+    ctx.fillStyle = color || 'rgba(230,90,120,0.07)';
+    const g = gap || 26;
+    for(let x = 0; x < w; x += g * 2) ctx.fillRect(x, 0, g, h);
+    for(let y = 0; y < h; y += g * 2) ctx.fillRect(0, y, w, g);
+    ctx.restore();
+  }
+
+  function drawStrawberry(ctx, cx, cy, size, rotation){
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rotation || 0);
+    ctx.beginPath();
+    ctx.moveTo(0, -size * 0.1);
+    ctx.bezierCurveTo(size * 0.55, -size * 0.05, size * 0.5, size * 0.55, 0, size * 0.65);
+    ctx.bezierCurveTo(-size * 0.5, size * 0.55, -size * 0.55, -size * 0.05, 0, -size * 0.1);
+    ctx.closePath();
+    const grad = ctx.createLinearGradient(0, -size * 0.1, 0, size * 0.65);
+    grad.addColorStop(0, '#F25C73');
+    grad.addColorStop(1, '#C62A41');
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    ctx.fillStyle = '#FFE8A3';
+    for(let i = 0; i < 7; i++){
+      const t = i / 7;
+      const yy = -size * 0.05 + t * size * 0.6;
+      const xx = Math.sin(t * Math.PI * 1.8) * size * 0.3;
+      ctx.beginPath();
+      ctx.ellipse(xx, yy, size * 0.035, size * 0.05, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = '#7C9473';
+    ctx.beginPath(); ctx.ellipse(-size*0.16, -size*0.12, size*0.22, size*0.12, Math.PI/4, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(size*0.16, -size*0.12, size*0.22, size*0.12, -Math.PI/4, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0, -size*0.18, size*0.16, size*0.1, 0, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  function addGrain(ctx, w, h, amount){
+    const imgData = ctx.getImageData(0, 0, w, h);
+    const d = imgData.data;
+    for(let i = 0; i < d.length; i += 4){
+      const n = (Math.random() - 0.5) * amount;
+      d[i]   = clamp255(d[i] + n);
+      d[i+1] = clamp255(d[i+1] + n);
+      d[i+2] = clamp255(d[i+2] + n);
+    }
+    ctx.putImageData(imgData, 0, 0);
+  }
+
+  function addVignette(ctx, w, h, strength){
+    const grad = ctx.createRadialGradient(w/2, h/2, h*0.25, w/2, h/2, h*0.75);
+    grad.addColorStop(0, 'rgba(0,0,0,0)');
+    grad.addColorStop(1, `rgba(0,0,0,${strength})`);
+    ctx.save();
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+    ctx.restore();
+  }
+
+  function addTint(ctx, w, h, color, alpha){
+    ctx.save();
+    ctx.globalCompositeOperation = 'soft-light';
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, w, h);
+    ctx.restore();
+  }
+
+  function applyPostFX(ctx, w, h, key){
+    const f = FILTERS[key];
+    if(!f) return;
+    if(f.tint) addTint(ctx, w, h, f.tint.color, f.tint.alpha);
+    if(f.grain) addGrain(ctx, w, h, f.grain);
+    if(f.vignette) addVignette(ctx, w, h, f.vignette);
+  }
+
+  async function ensureFonts(){
+    const specs = ["64px Chewy", "26px Quicksand", "38px Caveat", "20px VT323"];
+    try{
+      await Promise.all(specs.map(s => document.fonts.load(s)));
+      await document.fonts.ready;
+    }catch(e){ /* fall back silently to system fonts */ }
+  }
+
+  /* ===================== audio (synth shutter click, no network needed) ===================== */
+  let audioCtx = null;
+  function playShutterSound(){
+    if(!state.soundOn) return;
+    try{
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      const t = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(1400, t);
+      osc.frequency.exponentialRampToValueAtTime(600, t + 0.05);
+      gain.gain.setValueAtTime(0.06, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + 0.1);
+    }catch(e){ /* audio not available, no big deal */ }
+  }
+
+  /* ===================== camera ===================== */
+  async function initCamera(){
+    if(state.stream){ state.stream.getTracks().forEach(tr => tr.stop()); }
+    try{
+      state.stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: state.facingMode, width: { ideal: 1280 }, height: { ideal: 960 } },
+        audio: false
+      });
+      video.srcObject = state.stream;
+      video.classList.toggle('mirrored', state.facingMode === 'user');
+      cameraFallback.hidden = true;
+      shutterBtn.hidden = false;
+      flipCameraBtn.hidden = false;
+      state.useFallback = false;
+      shutterBtn.disabled = false;
+    }catch(err){
+      console.warn('camera unavailable, switching to gallery fallback', err);
+      state.useFallback = true;
+      cameraFallback.hidden = false;
+      shutterBtn.hidden = true;
+      flipCameraBtn.hidden = true;
+      updateFallbackPrompt();
+    }
+  }
+
+  function updateFallbackPrompt(){
+    const n = state.shots.length + 1;
+    fallbackText.textContent = state.shotsNeeded > 1
+      ? `pick photo ${n} of ${state.shotsNeeded} from your gallery 🍓`
+      : `pick a cute photo from your gallery 🍓`;
+  }
+
+  function applyLiveFilter(){
+    video.style.filter = FILTERS[state.filter].css;
+  }
+
+  setInterval(() => {
+    liveTimestamp.textContent = formatDigicamStamp(new Date());
+  }, 1000);
+  liveTimestamp.textContent = formatDigicamStamp(new Date());
+
+  /* ===================== capture ===================== */
+  function captureFrameFromVideo(){
+    const targetW = 800, targetH = 600;
+    const off = document.createElement('canvas');
+    off.width = targetW; off.height = targetH;
+    const ctx = off.getContext('2d');
+    const { sx, sy, sw, sh } = getCoverCrop(video.videoWidth, video.videoHeight, targetW, targetH);
+    const mirror = state.facingMode === 'user';
+    ctx.save();
+    if(mirror){ ctx.translate(targetW, 0); ctx.scale(-1, 1); }
+    ctx.filter = FILTERS[state.filter].css;
+    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, targetW, targetH);
+    ctx.restore();
+    ctx.filter = 'none';
+    applyPostFX(ctx, targetW, targetH, state.filter);
+    return off;
+  }
+
+  function loadImageFromFile(file){
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  async function captureFrameFromFile(file){
+    const img = await loadImageFromFile(file);
+    const targetW = 800, targetH = 600;
+    const off = document.createElement('canvas');
+    off.width = targetW; off.height = targetH;
+    const ctx = off.getContext('2d');
+    const { sx, sy, sw, sh } = getCoverCrop(img.naturalWidth, img.naturalHeight, targetW, targetH);
+    ctx.filter = FILTERS[state.filter].css;
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, targetW, targetH);
+    ctx.filter = 'none';
+    applyPostFX(ctx, targetW, targetH, state.filter);
+    return off;
+  }
+
+  function updateShotCounter(){
+    shotCounter.textContent = `SHOT ${Math.min(state.shots.length + 1, state.shotsNeeded)}/${state.shotsNeeded}`;
+  }
+
+  function triggerFlash(){
+    flashOverlay.classList.remove('flashing');
+    void flashOverlay.offsetWidth;
+    flashOverlay.classList.add('flashing');
+  }
+
+  async function runCountdown(){
+    viewfinder.classList.add('counting');
+    const labels = ['3', '2', '1', '📸'];
+    for(const label of labels){
+      countdownText.textContent = label;
+      countdownText.classList.remove('pulse');
+      void countdownText.offsetWidth;
+      countdownText.classList.add('pulse');
+      await sleep(550);
+    }
+    countdownText.textContent = '';
+    viewfinder.classList.remove('counting');
+  }
+
+  async function handleShutterClick(){
+    if(state.capturing || state.shots.length >= state.shotsNeeded) return;
+    state.capturing = true;
+    shutterBtn.disabled = true;
+    await runCountdown();
+    triggerFlash();
+    playShutterSound();
+    const canvas = captureFrameFromVideo();
+    state.shots.push({ canvas, time: new Date() });
+    updateShotCounter();
+    state.capturing = false;
+    shutterBtn.disabled = false;
+    if(state.shots.length >= state.shotsNeeded){
+      await finishSession();
+    }
+  }
+
+  fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const canvas = await captureFrameFromFile(file);
+    state.shots.push({ canvas, time: new Date() });
+    updateShotCounter();
+    fileInput.value = '';
+    if(state.shots.length >= state.shotsNeeded){
+      await finishSession();
+    } else {
+      updateFallbackPrompt();
+    }
+  });
+
+  /* ===================== compose final image ===================== */
+  function drawPhotoCell(ctx, shot, x, y, w, h){
+    ctx.save();
+    ctx.shadowColor = 'rgba(107,66,38,0.2)';
+    ctx.shadowBlur = 18;
+    ctx.shadowOffsetY = 6;
+    roundRectPath(ctx, x - 6, y - 6, w + 12, h + 12, 18);
+    ctx.fillStyle = '#fff';
+    ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    roundRectPath(ctx, x, y, w, h, 14);
+    ctx.clip();
+    ctx.drawImage(shot.canvas, x, y, w, h);
+    ctx.restore();
+  }
+
+  function composeStrip(){
+    const PAD = 44, GAP = 26, PW = 760, PH = 570, HEADER = 170, FOOTER = 150;
+    const W = PW + PAD * 2;
+    const H = HEADER + (PH + GAP) * state.shots.length - GAP + FOOTER + PAD * 2;
+
+    finalCanvasEl.width = W; finalCanvasEl.height = H;
+    const ctx = finalCanvasEl.getContext('2d');
+
+    ctx.fillStyle = '#FFF6EC';
+    ctx.fillRect(0, 0, W, H);
+    drawGingham(ctx, W, H);
+
+    ctx.save();
+    ctx.shadowColor = 'rgba(107,66,38,0.22)';
+    ctx.shadowBlur = 34; ctx.shadowOffsetY = 16;
+    roundRectPath(ctx, PAD * 0.45, PAD * 0.45, W - PAD * 0.9, H - PAD * 0.9, 40);
+    ctx.fillStyle = '#FFFDF9';
+    ctx.fill();
+    ctx.restore();
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#C62A41';
+    ctx.font = "64px 'Chewy', cursive";
+    ctx.fillText('🍓 strawbooth', W / 2, 96);
+    ctx.fillStyle = '#9A6B4C';
+    ctx.font = "24px 'Quicksand', sans-serif";
+    ctx.fillText('your lil cottagecore camera', W / 2, 134);
+
+    let y = HEADER;
+    const x = (W - PW) / 2;
+    state.shots.forEach(shot => {
+      drawPhotoCell(ctx, shot, x, y, PW, PH);
+      y += PH + GAP;
+    });
+
+    const footerY = y + 46;
+    ctx.fillStyle = '#6B4226';
+    ctx.font = "40px 'Caveat', cursive";
+    ctx.fillText(state.caption, W / 2, footerY);
+    ctx.fillStyle = '#9A6B4C';
+    ctx.font = "20px 'VT323', monospace";
+    ctx.fillText(formatDigicamStamp(state.shots[0].time), W / 2, footerY + 38);
+
+    drawStrawberry(ctx, 76, 76, 46, -0.3);
+    drawStrawberry(ctx, W - 76, 76, 46, 0.3);
+    drawStrawberry(ctx, 70, H - 56, 38, 0.5);
+    drawStrawberry(ctx, W - 70, H - 56, 38, -0.5);
+  }
+
+  function composePolaroid(){
+    const PW = 760, sideBorder = 40, topBorder = 40, bottomBorder = 230;
+    const PH = PW * 0.75;
+    const W = PW + sideBorder * 2;
+    const H = topBorder + PH + bottomBorder;
+
+    finalCanvasEl.width = W; finalCanvasEl.height = H;
+    const ctx = finalCanvasEl.getContext('2d');
+
+    ctx.fillStyle = '#FFF6EC';
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.save();
+    ctx.shadowColor = 'rgba(107,66,38,0.25)';
+    ctx.shadowBlur = 30; ctx.shadowOffsetY = 14;
+    roundRectPath(ctx, 14, 14, W - 28, H - 28, 22);
+    ctx.fillStyle = '#FFFDF9';
+    ctx.fill();
+    ctx.restore();
+
+    const shot = state.shots[0];
+    drawPhotoCell(ctx, shot, sideBorder, topBorder, PW, PH);
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#6B4226';
+    ctx.font = "44px 'Caveat', cursive";
+    ctx.fillText(state.caption, W / 2, topBorder + PH + 78);
+
+    ctx.fillStyle = '#C62A41';
+    ctx.font = "30px 'Chewy', cursive";
+    ctx.fillText('strawbooth 🍓', W / 2, topBorder + PH + 132);
+
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#9A6B4C';
+    ctx.font = "18px 'VT323', monospace";
+    ctx.fillText(formatDigicamStamp(shot.time), W - sideBorder, H - 26);
+    ctx.textAlign = 'left';
+
+    drawStrawberry(ctx, sideBorder + 30, topBorder + PH + 70, 36, -0.25);
+  }
+
+  async function finishSession(){
+    state.caption = CAPTIONS[Math.floor(Math.random() * CAPTIONS.length)];
+    await ensureFonts();
+    if(state.mode === 'strip') composeStrip(); else composePolaroid();
+    showScreen('result');
+  }
+
+  /* ===================== screens / ui wiring ===================== */
+  function showScreen(name){
+    screenCamera.classList.toggle('active', name === 'camera');
+    screenResult.classList.toggle('active', name === 'result');
+  }
+
+  modeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      modeBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.mode = btn.dataset.mode;
+      state.shotsNeeded = state.mode === 'strip' ? 4 : 1;
+      state.shots = [];
+      updateShotCounter();
+      if(state.useFallback) updateFallbackPrompt();
+    });
+  });
+
+  filterChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      filterChips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      state.filter = chip.dataset.filter;
+      applyLiveFilter();
+    });
+  });
+
+  shutterBtn.addEventListener('click', handleShutterClick);
+
+  flipCameraBtn.addEventListener('click', () => {
+    state.facingMode = state.facingMode === 'user' ? 'environment' : 'user';
+    initCamera();
+  });
+
+  soundToggleBtn.addEventListener('click', () => {
+    state.soundOn = !state.soundOn;
+    soundToggleBtn.textContent = state.soundOn ? '🔊' : '🔇';
+  });
+
+  retakeBtn.addEventListener('click', () => {
+    state.shots = [];
+    updateShotCounter();
+    if(state.useFallback) updateFallbackPrompt();
+    showScreen('camera');
+  });
+
+  downloadBtn.addEventListener('click', () => {
+    const link = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0, 10);
+    link.download = `strawbooth-${state.mode}-${stamp}.png`;
+    link.href = finalCanvasEl.toDataURL('image/png');
+    link.click();
+  });
+
+  /* ===================== boot ===================== */
+  applyLiveFilter();
+  updateShotCounter();
+  if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+    initCamera();
+  } else {
+    state.useFallback = true;
+    cameraFallback.hidden = false;
+    shutterBtn.hidden = true;
+    flipCameraBtn.hidden = true;
+    updateFallbackPrompt();
+  }
+})();
+</script>
+</body>
+</html>
